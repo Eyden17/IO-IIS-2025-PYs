@@ -111,7 +111,7 @@ const ReemplazoEquipos: React.FC = () => {
     if (!G) return null;
     return (
       <div className="overflow-auto">
-        <table className="w-full table-auto text-sm">
+        <table className=" w-full table-auto text-sm">
           <thead>
             <tr className="text-left">
               <th className="p-2">Año (t)</th>
@@ -287,11 +287,11 @@ const ReemplazoEquipos: React.FC = () => {
                   </div>
                 )}
               </div>
-              <div className="md:col-span-2 p-4 bg-muted rounded-lg">
+              <div className="md:col-span-2 p-4 bg-muted rounded-md">
                 <div className="mb-4 font-medium text-lg">
                   Datos por años transcurrido del equipo
                 </div>
-              <Table className="rounded-md border bg-background shadow-sm">
+              <Table className="rounded-md bg-background shadow-sm">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-24 text-center">Año</TableHead>
@@ -356,8 +356,8 @@ const ReemplazoEquipos: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold">Análisis y planes óptimos</h3>
               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-3 bg-muted rounded">{renderAnalysisTable()}</div>
-                <div className="p-3 bg-muted rounded">{renderPlanViewer()}</div>
+                <div className="p-3 bg-muted rounded-md">{renderAnalysisTable()}</div>
+                <div className="p-3 bg-muted rounded-md">{renderPlanViewer()}</div>
               </div>
 
               {plans && plans.length > 0 && (
