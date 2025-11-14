@@ -45,16 +45,12 @@ const ReemplazoEquipos: React.FC = () => {
     const T = Math.max(1, Math.min(30, Math.round(projectTerm)));
     const L = Math.max(1, Math.min(10, Math.round(life)));
     const P = Number(initialCost || 0);
-
     const resaleArr = ensureSize(resale, L);
     const maintArr = ensureSize(maint, L);
 
-    // --- DP ---
     const DP: number[] = new Array(T + 1).fill(Infinity);
     const choices: number[][] = new Array(T + 1).fill(0).map(() => []);
-    DP[T] = 0; // caso base
-
-    // --- Costo C_t^x ---
+    DP[T] = 0;
     const Ct_x = (t: number, x: number) => {
       const compra = P;
       let maintSum = 0;
@@ -66,16 +62,12 @@ const ReemplazoEquipos: React.FC = () => {
       return compra + maintSum - resaleVal;
     };
 
-    // --- DP hacia atrás ---
     for (let t = T-1; t >= 0; t--) {
       let best = Infinity;
       let bestXs: number[] = [];
-
       const maxX = Math.min(t + L, T);
-
       for (let x = t + 1; x <= maxX; x++) {
         const c = Ct_x(t, x) + DP[x];
-
         if (c < best) {
           best = c;
           bestXs = [x];
@@ -87,12 +79,8 @@ const ReemplazoEquipos: React.FC = () => {
       DP[t] = best;
       choices[t] = bestXs;
     }
-    console.log(DP);
-    console.log(choices);
 
-    // --- Construir planes ---
     const allPlans: Plan[] = [];
-
     const build = (t: number, currentPlan: number[]) => {
       if (allPlans.length >= 200) return;
       if (t === T) {
@@ -111,8 +99,6 @@ const ReemplazoEquipos: React.FC = () => {
         currentPlan.pop();
       }
     };
-    console.log(allPlans);
-
     build(0, []);
 
     setAnalysis({ G: DP.slice(0, T+1), choices });
@@ -128,7 +114,7 @@ const ReemplazoEquipos: React.FC = () => {
         <table className="w-full table-auto text-sm">
           <thead>
             <tr className="text-left">
-              <th className="p-2">t</th>
+              <th className="p-2">Año (t)</th>
               <th className="p-2">G(t)</th>
               <th className="p-2">Costos óptimos</th>
             </tr>
@@ -163,16 +149,16 @@ const ReemplazoEquipos: React.FC = () => {
         </div>
 
         <div className="bg-muted rounded p-3">
-          <div className="text-sm mb-2">Reemplazos (años de inicio de uso):</div>
+          <div className="text-sm mb-2">Reemplazos:</div>
           <div className="flex flex-wrap gap-2">
             {plan.map((year, idx) => (
-              <div key={idx} className="px-3 py-1 rounded bg-primary/10">Año {year}</div>
+              <div key={idx} className="px-3 py-1 rounded bg-primary/10">{year}</div>
             ))}
           </div>
         </div>
 
         <div className="mt-3 text-sm">
-          <div className="font-medium">Detalle breve:</div>
+          <div className="font-medium">Nota:</div>
           <p>Este plan indica en qué años se compra (inicio de uso) equipos para cubrir el proyecto optimizando costos.</p>
         </div>
       </div>
@@ -216,7 +202,7 @@ const ReemplazoEquipos: React.FC = () => {
                         <Label className="text-sm font-medium cursor-help">Costo inicial (P)</Label>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>El valor de cada uno de los productos al momento de comprarlos</p>
+                        <p>El valor de cada uno de los equipos al momento de comprarlos</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -237,7 +223,7 @@ const ReemplazoEquipos: React.FC = () => {
                         <Label className="text-sm font-medium cursor-help">Plazo del proyecto (T) años</Label>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Cuanto tiempo va a durar el oficio en el cual necesitamos del objeto</p>
+                        <p>Cuanto tiempo va a durar el oficio en el cual necesitamos del equipo</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -261,7 +247,7 @@ const ReemplazoEquipos: React.FC = () => {
                         <Label className="text-sm font-medium cursor-help">Vida útil máxima (L) años</Label>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Cuanto tiempo dura el objeto</p>
+                        <p>Cuanto tiempo dura el equipo</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -291,7 +277,7 @@ const ReemplazoEquipos: React.FC = () => {
                             <Label className="text-sm font-medium cursor-help">Tasa de inflación por periodo</Label>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Cambio de precio de compra del producto conforme al tiempo</p>
+                            <p>Cambio de precio de compra del equipo conforme al tiempo</p>
                             <p className="text-xs text-muted-foreground mt-1">(ej: 0.05 = 5%)</p>
                           </TooltipContent>
                         </Tooltip>
@@ -303,7 +289,7 @@ const ReemplazoEquipos: React.FC = () => {
               </div>
               <div className="md:col-span-2 p-4 bg-muted rounded-lg">
                 <div className="mb-4 font-medium text-lg">
-                  Datos por edad del
+                  Datos por años transcurrido del equipo
                 </div>
               <Table className="rounded-md border bg-background shadow-sm">
                 <TableHeader>
@@ -378,7 +364,7 @@ const ReemplazoEquipos: React.FC = () => {
                 <div className="mt-4 text-sm">
                   <div className="font-medium">Resumen:</div>
                   <p>Se produjeron {plans.length} planes óptimos (máx 200). La tabla G(t) muestra el costo mínimo desde cada año t hasta el final del proyecto.
-                  Puedes navegar entre los planes con las flechas.</p>
+                  Se puede navegar entre los planes con las flechas.</p>
                 </div>
               )}
             </div>
