@@ -44,9 +44,10 @@ const ReemplazoEquipos: React.FC = () => {
   const compute = () => {
     const T = Math.max(1, Math.min(30, Math.round(projectTerm)));
     const L = Math.max(1, Math.min(10, Math.round(life)));
-    const P = Number(initialCost || 0);
+    let P = Number(initialCost || 0);
     const resaleArr = ensureSize(resale, L);
     const maintArr = ensureSize(maint, L);
+    const inflation = inflationRate;
 
     const DP: number[] = new Array(T + 1).fill(Infinity);
     const choices: number[][] = new Array(T + 1).fill(0).map(() => []);
@@ -58,7 +59,6 @@ const ReemplazoEquipos: React.FC = () => {
         maintSum += maintArr[age];
       }
       const resaleVal = resaleArr[x-t- 1];
-      console.log(compra + maintSum - resaleVal);
       return compra + maintSum - resaleVal;
     };
 
@@ -75,9 +75,9 @@ const ReemplazoEquipos: React.FC = () => {
           bestXs.push(x);
         }
       }
-
       DP[t] = best;
       choices[t] = bestXs;
+      if (inflationActive) P += P*inflation;
     }
 
     const allPlans: Plan[] = [];
