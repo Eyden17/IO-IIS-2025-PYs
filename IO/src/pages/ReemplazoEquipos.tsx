@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Calculator, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Calculator, ChevronLeft, ChevronRight, FolderUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -40,6 +40,78 @@ const ReemplazoEquipos: React.FC = () => {
     while (copy.length < size) copy.push(0);
     return copy;
   };
+
+  const validateJSON = (data: any): { valid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    const numericFields = ["initialCost", "projectTerm", "life"];
+    numericFields.forEach(field => {
+      if (data[field] === undefined) {
+        errors.push(`Falta el campo obligatorio '${field}'.`);
+      } else if (typeof data[field] !== "number" || isNaN(data[field])) {
+        errors.push(`El campo '${field}' debe ser un número.`);
+      }
+    });
+    if (data.inflationActive !== undefined && typeof data.inflationActive !== "boolean") {
+      errors.push("El campo 'inflationActive' debe ser booleano.");
+    }
+    if (data.inflationRate !== undefined && 
+        (typeof data.inflationRate !== "number" || isNaN(data.inflationRate))) {
+      errors.push("El campo 'inflationRate' debe ser numérico.");
+    }
+    if (!Array.isArray(data.maintenance)) {
+      errors.push("El campo 'maintenance' debe ser un arreglo.");
+    }
+    if (!Array.isArray(data.resale)) {
+      errors.push("El campo 'resale' debe ser un arreglo.");
+    }
+    if (typeof data.life === "number") {
+      if (Array.isArray(data.maintenance) && data.maintenance.length !== data.life) {
+        errors.push(
+          `El arreglo 'maintenance' debe tener exactamente ${data.life} elementos.`
+        );
+      }
+      if (Array.isArray(data.resale) && data.resale.length !== data.life) {
+        errors.push(
+          `El arreglo 'resale' debe tener exactamente ${data.life} elementos.`
+        );
+      }
+    }
+
+    const validateArrayNumbers = (arr: any[], field: string) => {
+      arr.forEach((x, i) => {
+        if (typeof x !== "number" || isNaN(x)) {
+          errors.push(`El elemento ${i} de '${field}' debe ser numérico.`);
+        }
+      });
+    };
+
+    if (Array.isArray(data.maintenance)) validateArrayNumbers(data.maintenance, "maintenance");
+    if (Array.isArray(data.resale)) validateArrayNumbers(data.resale, "resale");
+
+    return { valid: errors.length === 0, errors };
+  };
+
+  const loadFromJSON = (data: any) => {
+    const result = validateJSON(data);
+    if (!result.valid) {
+      alert("El JSON contiene errores:\n\n" + result.errors.join("\n"));
+      return;
+    }
+    setInitialCost(data.initialCost);
+    setProjectTerm(data.projectTerm);
+    setLife(data.life);
+
+    setInflationActive(Boolean(data.inflationActive));
+    setInflationRate(Number(data.inflationRate || 0));
+
+    setMaint(data.maintenance);
+    setResale(data.resale);
+    setAnalysis({ G: [], choices: [] });
+    setPlans([]);
+  };
+
+
 
   const compute = () => {
     const T = Math.max(1, Math.min(30, Math.round(projectTerm)));
@@ -345,11 +417,40 @@ const ReemplazoEquipos: React.FC = () => {
             </div>
 
             <div className="mt-4 flex gap-2">
-              <Button onClick={compute}>Calcular</Button>
-              <Button variant="outline" onClick={() => {
+              <Button className="flex items-center justify-center gap-2 w-full h-12 text-base" onClick={compute}>Calcular</Button>
+              <Button className="flex items-center justify-center gap-2 w-full h-12 text-base" variant="outline"  onClick={() => {
                 setAnalysis({ G: [], choices: [] });
                 setPlans([]);
               }}>Limpiar resultados</Button>
+              <input
+                id="fileInput"
+                type="file"
+                accept=".json"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+
+                  const reader = new FileReader();
+                  reader.onload = (evt) => {
+                    try {
+                      const json = JSON.parse(evt.target?.result as string);
+                      loadFromJSON(json);
+                    } catch (err) {
+                      alert("El archivo JSON no es válido o está corrupto.");
+                    }
+                  };
+                  reader.readAsText(file);
+                }}
+              />
+              <Button
+                variant="outline"
+                className="flex items-center justify-center gap-2 w-full h-12 text-base"
+                onClick={() => document.getElementById("fileInput")!.click()}
+              >
+                <FolderUp className="w-5 h-5" />
+                <span>Cargar archivo JSON</span>
+              </Button>
             </div>
 
             {/* Resultados */}

@@ -1,0 +1,9 @@
+{
+  "initialCost": 500,
+  "projectTerm": 5,
+  "life": 3,
+  "inflationActive": false,
+  "inflationRate": 0,
+  "maintenance": [30, 40, 60],
+  "resale": [400, 300, 250]
+}
